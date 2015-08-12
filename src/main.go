@@ -33,42 +33,19 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Printf("%T\n", tx)
-	stmt, err := tx.Prepare("insert into players(name, rank, aga_id) values (?, ?, ?)")
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer stmt.Close()
-	_, err = stmt.Exec("Quinten Palmer", 10, 26262626)
-	if err != nil {
-		log.Fatal(err)
-	}
-	_, err = stmt.Exec("Andrew Hall", -5, 5678)
-	if err != nil {
-		log.Fatal(err)
-	}
+	err = ladder.InsertPlayer(tx, ladder.Player{Name: "Quinten Palmer", AgaId: 10, Rank: 234})
+	err = ladder.InsertPlayer(tx, ladder.Player{Name: "Andrew Hall", AgaId: -5, Rank: 34})
 	tx.Commit()
 
-	rows, err := db.Query("select * from players")
+	tx, err = db.Begin()
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer rows.Close()
-	for rows.Next() {
-		var id int
-		var name string
-		var rank float64
-		var aga_id int
-		rows.Scan(&id, &name, &rank, &aga_id)
-		player := ladder.Player{
-			Id:    id,
-			Name:  name,
-			Rank:  rank,
-			AgaId: aga_id,
-		}
-		fmt.Println(player)
+	players, err := ladder.GetAllPlayers(tx)
+	if err != nil {
+		log.Fatal(err)
 	}
-
+	fmt.Println(players)
 	/*
 
 
